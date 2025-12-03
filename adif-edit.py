@@ -19,7 +19,10 @@
 # This capability was 85 lines but it couldn't edit files that had the field, not did it allow you to set the field name
 # This version is much more useful
 ############################
-# v1.0 - initial creation
+# v1.0 
+#   initial creation
+# v1.01 
+#   Fixed an issue where reading assumed uft-8 files would crash
 
 import re
 import sys
@@ -80,7 +83,8 @@ def update_adif_file(input_file, output_file, field_name, field_value):
     Read an ADIF file, add a field to each record, and write to output file.
     """
     try:
-        with open(input_file, 'r', encoding='utf-8') as f:
+        #with open(input_file, 'r', encoding='utf-8') as f:
+        with open(input_file, 'r') as f:
             content = f.read()
 
         # Split content into header and records
