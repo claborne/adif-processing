@@ -1,13 +1,15 @@
 # Created  12/2/2025
 # copyright 2025, Christian Claborne, The Ham Ninja, N1CLC
 # licensed under the GNU General Public License (GPL), specifically version 2 (GPLv2)
-# I needed an app to modify ADIF files so I used claude.ai for a draft
+# I needed an app to modify ADIF files so I used claude.ai for a draft 
 # then modified to fit my needs as well as fixing a bug created by claude.ai
 # My initial needs could be met in just a few lines of code but this is more flexible
 
 # USAGE: edit-adif <input_file> <output_file> <value> [<filed_name> | -f]
 # If no arguments are passed, it outputs help on usage and prompts you for all values
-
+# If output file = "-f" this enables full override and assumes defaults of
+#         <input_file> foo.adi SOTA OTHER
+# Full override skips the confirmation step at the end and executes unless input_file = output_file
 # Output file can be left off and it proposes a default
 # It expects to see some sort of "activity" for the value but allows override at runtime
 # My default field name is "OTHER" and you won't be prompted if you use -f
@@ -19,10 +21,14 @@
 # This capability was 85 lines but it couldn't edit files that had the field, not did it allow you to set the field name
 # This version is much more useful
 ############################
-# v1.0 
+# v1.0
 #   initial creation
-# v1.01 
+# v1.01
 #   Fixed an issue where reading assumed uft-8 files would crash
+# V1.02
+#   If you pass "-f" as the output file name at the end,
+#   sets default values
+#   This version does not allow the input and output files to be the same
 
 import re
 import sys
@@ -83,7 +89,7 @@ def update_adif_file(input_file, output_file, field_name, field_value):
     Read an ADIF file, add a field to each record, and write to output file.
     """
     try:
-        #with open(input_file, 'r', encoding='utf-8') as f:
+        #with open(input_file, 'r', encoding='utf-8') as f:  #fixes a bug where a dump file contains something it doesn't like.
         with open(input_file, 'r') as f:
             content = f.read()
 
@@ -145,15 +151,44 @@ def update_adif_file(input_file, output_file, field_name, field_value):
 #############################################################
 def main():
     """Main function to run the ADIF updater."""
-    print("=== ADIF Field Updater ===\n")
-
-    # Get input file
     if len(sys.argv) > 1:
         input_file = sys.argv[1]
     else:
         input_file = ""
+
+    if len(sys.argv) > 2:
+        output_file = sys.argv[2]
+    else:
+        output_file = ""
+    if output_file.upper() == '-F':
+        user_override = 'Y'
+    else:
+        user_override = 'N'
+
+    if len(sys.argv) > 3:
+        field_value = sys.argv[3].upper()
+    else:
+        field_value = ""
+
+    if len(sys.argv) > 4:
+        field_name = sys.argv[4].upper()
+    else:
+        field_name = ""  # initialize the field
+
+    if user_override == 'Y':
+        output_file = 'foo.adi'
+        field_value = 'SOTA'
+        field_name = 'OTHER'
+        
+        print("=== ADIF Field Updater ===\n")
+
+    # Get input file
+    if input_file == output_file:  #input can't equal output
+        input_file = ""
+        print(f"\nERROR!: INPUT FILE CAN NOT EQUAL OUTPUT FILE NAME\n")
+
     if not input_file:
-        print(f"\nUSAGE: {sys.argv[0]} input_file output_file activity")
+        print(f"\nUSAGE: {sys.argv[0]} <input_file> <output_file> <activity> <output file>")
         input_file = input("\nEnter INPUT ADIF file path or Q to QUIT: ").strip()
 
         if input_file.strip().upper() == "Q":
@@ -161,9 +196,8 @@ def main():
             sys.exit()  # user wants to exit
 
     # Get output file
-    if len(sys.argv) > 2:
-        output_file = sys.argv[2]
-    else:
+
+    if not output_file:
         default_output = input_file.replace('.adi', '_updated.adi').replace('.adif', '_updated.adif')
         if not default_output.endswith(('.adi', '.adif')):
             default_output += '_updated.adi'
@@ -173,15 +207,9 @@ def main():
             output_file = default_output
 
 
-
 ##########################################################
 ############## FIELD VALUE PROCESSING         ############
 ##########################################################
-
-    if len(sys.argv) > 3:
-        field_value = sys.argv[3].upper()
-    else:
-        field_value = ""
 
     passed = 0
     while passed == 0:
@@ -220,13 +248,8 @@ def main():
 
     ##########################################################
 
-    if len(sys.argv) > 4:
-        field_name = sys.argv[4].upper()
-    else:
-        field_name = ""  #initialize the field
-
     if field_name != '-F':   # we don't want to force it
-        print(f"The field name is currently set to {field_name}")
+        #print(f"The field name is currently set to {field_name}")
         # Get field name to add or update  (default to "OTHER")
         if not field_name:  # nothing was passed on the command line
             field_name = input("Enter field name to add or update (default: OTHER, q to Quit): ").strip().upper()
@@ -246,11 +269,11 @@ def main():
     print(f"Input:  {input_file}")
     print(f"Output: {output_file}")
 
-    confirm = input("\nProceed? (y/n): ").strip().lower()
-    if confirm != 'y':
-        print("Operation cancelled")
-        return
-
+    if user_override == 'N':
+        confirm = input("\nProceed? (y/n): ").strip().lower()
+        if confirm != 'y':
+            print("Operation cancelled")
+            return
     # Process the file
     print("\nProcessing...")
     update_adif_file(input_file, output_file, field_name, field_value)
