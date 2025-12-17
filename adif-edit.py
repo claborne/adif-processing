@@ -26,12 +26,18 @@
 # v1.01
 #   Fixed an issue where reading assumed uft-8 files would crash
 # V1.02
-#   If you pass "-f" as the output file name at the end,
-#   sets default values
+#   If you pass "-f" as the output file name, it goes into full override mode, setting default values for
+#   output_file, field_value, field_name, and it skips the comformation step at the end and just executes.
 #   This version does not allow the input and output files to be the same
+#
+# V1.03
+#   Created some default variables to make this easier to change.
+#   I like putting the output file in a place that is easy for aclog.
+#   Putting a -f anywhere will assume defaults for all following parameters
 
 import re
 import sys
+import time
 
 
 def parse_adif_record(record):
@@ -150,6 +156,16 @@ def update_adif_file(input_file, output_file, field_name, field_value):
 #####                     Entry Point                   #####
 #############################################################
 def main():
+    # Setup any defaults needed
+    default_output_file_name = 'C:\\Users\\micro\\Documents\\Affirmatech\\N3FJP Software\\ACLog\\foo.adi'
+    default_field_value = 'SOTA'
+    default_field_name = 'OTHER'
+
+    # setup a timer
+    start_time = time.perf_counter()
+
+    print(f"\n=== ADIF Field Updater ===")
+
     """Main function to run the ADIF updater."""
     if len(sys.argv) > 1:
         input_file = sys.argv[1]
@@ -176,12 +192,10 @@ def main():
         field_name = ""  # initialize the field
 
     if user_override == 'Y':
-        output_file = 'foo.adi'
-        field_value = 'SOTA'
-        field_name = 'OTHER'
+        output_file = default_output_file_name
+        field_value = default_field_value
+        field_name = default_field_name
         
-        print("=== ADIF Field Updater ===\n")
-
     # Get input file
     if input_file == output_file:  #input can't equal output
         input_file = ""
@@ -195,7 +209,7 @@ def main():
             print("\nQuitting.")
             sys.exit()  # user wants to exit
 
-    # Get output file
+    # Get output file or use the default
 
     if not output_file:
         default_output = input_file.replace('.adi', '_updated.adi').replace('.adif', '_updated.adif')
@@ -213,18 +227,21 @@ def main():
 
     passed = 0
     while passed == 0:
-        if not field_value:  # user didn't supply activity on the command line so prompt for it
+        # user may not supply activity on the command line so prompt for it
+        # We will prompt for a value but the user can override causing null to be placed in the field (strange but true)
+        if not field_value:
             # Prompt the user for replacement text
             field_value = input(
                 "\nEnter text for other field (ex SOTA|POTA|CHASE|HUNT|FIELD|CONTEST) [q to quit]: ").strip().upper()
 
-            ###### quigremovefield_value = user_input.strip().upper() #go ahead and stash the value
-        #else:
-        #    user_input = field_value.strip().upper()
-
         if field_value.strip().upper() == "Q":
             print("\nQuitting.")
             sys.exit()  # user wants to exit
+
+        if field_value == "-F":
+            field_value = default_field_value
+            field_name = default_field_name
+            user_override = 'Y'
 
         # Check user input
         if field_value not in ["SOTA", "POTA", "SPOTA", "CHASE", "HUNT", "FIELD", "CONTEST"]:
@@ -248,20 +265,21 @@ def main():
 
     ##########################################################
 
-    if field_name != '-F':   # we don't want to force it
+    if field_name.upper() != '-F':   # we don't want to force it
         #print(f"The field name is currently set to {field_name}")
         # Get field name to add or update  (default to "OTHER")
         if not field_name:  # nothing was passed on the command line
-            field_name = input("Enter field name to add or update (default: OTHER, q to Quit): ").strip().upper()
+            field_name = input("Enter field name to add or update (default: " + default_field_name +", q to Quit): ").strip().upper()
             
             if field_name == "Q":
                 print("\nQuitting.")
                 sys.exit()  # user wants to exit
 
             if not field_name:  # user entered nothing
-                field_name = "OTHER"
+                field_name = default_field_name
     else:
         field_name = "OTHER"
+        user_override = "Y"
 
     # Confirm before proceeding
     print(f"\nWill add/update <{field_name}:{len(field_value)}>{field_value} to all records")
@@ -278,6 +296,10 @@ def main():
     print("\nProcessing...")
     update_adif_file(input_file, output_file, field_name, field_value)
 
+    #how long did this run take
+    end_time = time.perf_counter()
+    elapsed_time = end_time - start_time
+    print(f"Code execution took: {elapsed_time:.4f} seconds")
 
 if __name__ == "__main__":
     main()
