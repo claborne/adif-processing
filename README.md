@@ -4,3 +4,10 @@ I use a portable logging app on my phone and iPad to log contacts for POTA, SOTA
 
 The program can be used to add or edit ANY field in the ADIF.  
 See associated documentation pdf for description and usage.
+========================================================================
+Change Log
+# V1.03 2025/12/17
+#   Created some default variables to make this easier to change.
+#   I like putting the output file in a place that is easy for aclog.
+#   Putting a -f anywhere will assume defaults for all following parameters
+
