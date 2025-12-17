@@ -10,4 +10,3 @@ Change Log
 #   Created some default variables to make this easier to change.
 #   I like putting the output file in a place that is easy for aclog.
 #   Putting a -f anywhere will assume defaults for all following parameters
-
