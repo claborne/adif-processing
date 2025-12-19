@@ -1,0 +1,21 @@
+12/2/2025 - v1.0  Rewrite of addother.py created July 2025
+#####################
+   VERSION HISTORY
+#####################
+
+V1.04 12/19/2025
+   Added help command -h
+   See pdf for full documentation
+
+V1.03 12/12/2025
+   Created some default variables to make this easier to change.
+   I like putting the output file in a place that is easy for aclog.
+   Putting a -f anywhere will assume defaults for all following parameters
+
+V1.02 
+   If you pass "-f" as the output file name, it goes into full override mode, setting default values for
+   output_file, field_value, field_name, and it skips the comformation step at the end and just executes.
+   This version does not allow the input and output files to be the same
+
+v1.01
+   Fixed an issue where reading assumed uft-8 files would crash or it was just the large file.
