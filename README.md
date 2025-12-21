@@ -13,4 +13,5 @@ V1.03 2025/12/17
   I like putting the output file in a place that is easy for aclog.
   Putting a -f anywhere will assume defaults for all following parameters
 
-# If you'd like a compiled version or customization of this, just message N1CLC directly (https://www.qrz.com/db/N1CLC)
+Associated .exe file is included. 
+# If you'd like a customization of this, just message N1CLC directly (https://www.qrz.com/db/N1CLC)
