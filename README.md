@@ -4,6 +4,7 @@ I use a portable logging app on my phone and iPad to log contacts for POTA, SOTA
 The program can be used to add or edit ANY field in the ADIF.  
 
 See associated documentation pdf for description and usage.
+
 If you run the program without any parameters, it will prompt you for each value. 
 \========================================================================
 
