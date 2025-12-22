@@ -3,6 +3,13 @@
    VERSION HISTORY
 #####################
 
+V1.05 12/21/2025
+   Because PoLo does not include MY_GRIDSQUARE field when in pure chase or hunt mode,
+   I've added a -c directive after the file to add or edit that with whatever the default_mygridsquare.
+   This works just like the -f directive when used after the source file name but runs the 
+   default_output_file_name through the modification program again and outputs the chase file 
+   to the default_chase_file_name.  Think of this as a two pass action.
+   
 V1.04 12/19/2025
    Added help command -h
    See pdf for full documentation

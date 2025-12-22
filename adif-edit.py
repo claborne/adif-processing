@@ -1,4 +1,5 @@
-# Created  12/2/2025
+# Initial incept  12/2/2025
+# V1.05 12/21/2025
 # copyright 2025, Christian Claborne, The Ham Ninja, N1CLC
 # licensed under the GNU General Public License (GPL), specifically version 2 (GPLv2)
 # I needed an app to modify ADIF files so I used claude.ai for a draft 
@@ -19,7 +20,7 @@ import time
 
 def help():
     print(f"""
-Version: 1.04
+Version: 1.05
 
 Usage:
    {sys.argv[0]} [-h | <input_file>] [<output_file | -f>] [<value> | -f] [<field_name> | -f]
@@ -39,9 +40,12 @@ NOTE: Defaults are hard coded in the script at the top of the entry point):
     (If the argument is blank all following arguments should be left blank, causing the app to prompt the user 
     for the output file name and the rest of the arguments.)
 
-    “-f” will force override mode, forcing default values for this all all subsequent parameters (defined above), 
+    “-f” will force override mode, forcing default values for this and all subsequent parameters (defined above), 
     skipping the confirmation step.
-
+    
+    “-c” puts the app into override mode like -f and runs a second replace on the default output file by adding
+    or changing MY_GRIDSQUARE to the default set.  This was needed for pure chase logs from PoLo since it doesn't
+    supply MY_GRIDSQUARE when only chasing.
 
 - value 
     The value that you want to be put in the field
@@ -177,11 +181,24 @@ def update_adif_file(input_file, output_file, field_name, field_value):
 #####                     Entry Point                   #####
 #############################################################
 def main():
+    #########################################################
+    ##########         D E B U G                   ##########
+    #########################################################
+    #print(f"arg 0 is {sys.argv[0]}, arg 1 is {sys.argv[1]}, arg 2 is {sys.argv[2]}")
+    #
+    #print("\nQuitting.")
+    #sys.exit()  # user wants to exit
+    ##########################################################
 
     # Setup any defaults needed
     default_output_file_name = 'C:\\Users\\micro\\Documents\\Affirmatech\\N3FJP Software\\ACLog\\foo.adi'
     default_field_value = 'SOTA'
     default_field_name = 'OTHER'
+    default_chase_file_name = 'C:\\Users\\micro\\Documents\\Affirmatech\\N3FJP Software\\ACLog\\bar.adi'
+    default_MY_GRIDSQUARE = 'DM12kw'
+
+    user_override = 'N'
+    chase_mode = 'N'
 
     # setup a timer
     start_time = time.perf_counter()
@@ -198,10 +215,7 @@ def main():
         output_file = sys.argv[2]
     else:
         output_file = ""
-    if output_file.upper() == '-F':
-        user_override = 'Y'
-    else:
-        user_override = 'N'
+
 
     if len(sys.argv) > 3:
         field_value = sys.argv[3].upper()
@@ -213,10 +227,18 @@ def main():
     else:
         field_name = ""  # initialize the field
 
-    if user_override == 'Y':
+    if output_file.upper() == '-F':
+        user_override = 'Y'
         output_file = default_output_file_name
         field_value = default_field_value
         field_name = default_field_name
+
+    if output_file.upper() == '-C':
+        user_override = 'Y'
+        chase_mode = 'Y'
+        output_file = default_output_file_name  # This is for the first pass
+        field_value = "CHASE"  # This is for the first run (it changes later for the second run)
+        field_name = default_field_name # This is for the first run (it changes later for the second run)
 
     # If user want's some help
     if input_file == "-h":
@@ -272,7 +294,7 @@ def main():
             user_override = 'Y'
 
         # Check user input
-        if field_value not in ["SOTA", "POTA", "SPOTA", "CHASE", "HUNT", "FIELD", "CONTEST"]:
+        if field_value not in ["SOTA", "POTA", "SPOTA", "CHASE", "HUNT", "FIELD", "CONTEST", "DM12KW"]:
             # print("\nYou must enter one of the following: SOTA, POTA, SPOTA, CHASE, HUNT, FIELD, CONTEST.")
             print("\nI expected one of the following: SOTA, POTA, SPOTA, CHASE, HUNT, FIELD, CONTEST.")
 
@@ -323,6 +345,16 @@ def main():
     # Process the file
     print("\nProcessing...")
     update_adif_file(input_file, output_file, field_name, field_value)
+
+    if chase_mode == 'Y':  #Run the update again adding the chased from gridsquare
+        print(f"\nChase mode activated, modifying MY_GRIDSQUARE")
+        input_file = default_output_file_name
+        output_file = default_chase_file_name
+        field_value = default_MY_GRIDSQUARE
+        field_name = 'MY_GRIDSQUARE'
+        print(f"Will add/update <{field_name}:{len(field_value)}>{field_value} to all records")
+        print("\nProcessing...")
+        update_adif_file(input_file, output_file, field_name, field_value)
 
     #how long did this run take
     end_time = time.perf_counter()
