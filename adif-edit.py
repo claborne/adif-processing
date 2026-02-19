@@ -1,5 +1,5 @@
 # Initial incept  12/2/2025
-# V1.05 12/21/2025
+# V1.06 02/19/2026
 # copyright 2025, Christian Claborne, The Ham Ninja, N1CLC
 # licensed under the GNU General Public License (GPL), specifically version 2 (GPLv2)
 # I needed an app to modify ADIF files so I used claude.ai for a draft 
@@ -20,10 +20,10 @@ import time
 
 def help():
     print(f"""
-Version: 1.05
+Version: 1.06
 
 Usage:
-   {sys.argv[0]} [-h | <input_file>] [<output_file | -f>] [<value> | -f] [<field_name> | -f]
+   {sys.argv[0]} [-h | <input_file>] [<output_file | -d | -c>] [<value> | -f] [<field_name> | -f]
    
 NOTE: Defaults are hard coded in the script at the top of the entry point):
 
@@ -40,12 +40,12 @@ NOTE: Defaults are hard coded in the script at the top of the entry point):
     (If the argument is blank all following arguments should be left blank, causing the app to prompt the user 
     for the output file name and the rest of the arguments.)
 
-    “-f” will force override mode, forcing default values for this and all subsequent parameters (defined above), 
+    “-d” forces default values for this and all subsequent parameters (defined above), 
     skipping the confirmation step.
     
-    “-c” puts the app into override mode like -f and runs a second replace on the default output file by adding
-    or changing MY_GRIDSQUARE to the default set.  This was needed for pure chase logs from PoLo since it doesn't
-    supply MY_GRIDSQUARE when only chasing.
+    “-c” is "chase mode" puts the app into override mode like -f and runs a second replace on the default output file 
+    by adding or changing MY_GRIDSQUARE to the default set.  This was needed for pure chase logs from PoLo since it 
+    doesn't supply MY_GRIDSQUARE when only chasing.
 
 - value 
     The value that you want to be put in the field
@@ -196,7 +196,6 @@ def main():
     default_field_name = 'OTHER'
     default_chase_file_name = 'C:\\Users\\micro\\Documents\\Affirmatech\\N3FJP Software\\ACLog\\bar.adi'
     default_MY_GRIDSQUARE = 'DM12kw'
-
     user_override = 'N'
     chase_mode = 'N'
 
@@ -227,7 +226,7 @@ def main():
     else:
         field_name = ""  # initialize the field
 
-    if output_file.upper() == '-F':
+    if output_file.upper() == '-D':
         user_override = 'Y'
         output_file = default_output_file_name
         field_value = default_field_value
